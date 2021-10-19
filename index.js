@@ -15,6 +15,22 @@ async function runHenry() {
 			console.log(`videosId[${i}] = ${videosId[i]}`);
 }
 
+async function fetchCaptionTracks(videoId) {
+
+	var url = `https://youtube.com/watch?v=${videoId}`
+
+	var captionTracks;
+	await fetch(url, { method: "Get"})
+		.then(res => res.text())
+		.then(async (res) => {
+			var expression = /"playerCaptionsTracklistRenderer":{"captionTracks":(\[[^\]]+\])/g
+			var match = (res.match(expression) || []).map(e => e.replace(expression, '$1'));
+			if(match.length == 0) throw "This video doesn't have captions"
+			captionTracks = JSON.parse(match)
+		})
+	return captionTracks
+}
+
 async function fetchChannelId(query) {
 
 	var url = `https://www.googleapis.com/youtube/v3/search?part=id%2Csnippet&q=${query}&type=channel&key=${auth.key}`
