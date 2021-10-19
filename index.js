@@ -45,8 +45,10 @@ async function fetchCaptionTracks(videoId) {
 		.then(async (res) => {
 			var expression = /"playerCaptionsTracklistRenderer":{"captionTracks":(\[[^\]]+\])/g
 			var match = (res.match(expression) || []).map(e => e.replace(expression, '$1'));
-			if(match.length == 0) throw "This video doesn't have captions"
-			captionTracks = JSON.parse(match)
+			if(match.length > 0)
+				captionTracks = JSON.parse(match)
+			else 
+				captionTracks = []
 		})
 	return captionTracks
 }
