@@ -8,7 +8,12 @@ async function runHenry() {
 	if (args.length != 1)
 		console.log('Usage: node index.js <channel id>');
 	else
-		var channelId = await fetchChannelId(args[0]);
+		var channelId;
+		if (args[0].length == 24) //TODO find better condition
+			channelId = args[0];
+		else
+			channelId = await fetchChannelId(args[0]);
+		console.log(channelId);
 		var uploadsId = await fetchUploadsId(channelId);
 		var videosId = await fetchVideosId(uploadsId);
 		for (var i = 0; i < videosId.length; i++)
