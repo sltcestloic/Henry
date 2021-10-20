@@ -15,6 +15,44 @@ async function runHenry() {
 			console.log(`videosId[${i}] = ${videosId[i]}`);
 }
 
+async function fetchCaptionsText(trackUrl) {
+
+	function decodeText(text) {
+		return text.replace(/&[a-z]+;#\d+;/g, function(match) {
+			return String.fromCharCode(match.match(/\d+/))
+		})
+	}
+
+	var text
+	await fetch(trackUrl, {method: "Get"})
+		.then(res => res.text())
+		.then(async (res) => {
+			const expression = /<text start="[^"]+" dur="[^"]+">([^<]+)/g
+			// Take the first group and decode it, for each match
+			text = (res.match(expression) || []).map(e => decodeText(e.replace(expression, '$1')));
+		})
+		
+	return text
+}
+
+async function fetchCaptionTracks(videoId) {
+
+	var url = `https://youtube.com/watch?v=${videoId}`
+
+	var captionTracks;
+	await fetch(url, { method: "Get"})
+		.then(res => res.text())
+		.then(async (res) => {
+			var expression = /"playerCaptionsTracklistRenderer":{"captionTracks":(\[[^\]]+\])/g
+			var match = (res.match(expression) || []).map(e => e.replace(expression, '$1'));
+			if(match.length > 0)
+				captionTracks = JSON.parse(match)
+			else 
+				captionTracks = []
+		})
+	return captionTracks
+}
+
 async function fetchChannelId(query) {
 
 	var url = `https://www.googleapis.com/youtube/v3/search?part=id%2Csnippet&q=${query}&type=channel&key=${auth.key}`
