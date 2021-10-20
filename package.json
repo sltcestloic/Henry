@@ -19,6 +19,7 @@
   "homepage": "https://github.com/wshloic/Henry#readme",
   "dependencies": {
     "googlethis": "^1.2.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "xml2json": "^0.12.0"
   }
 }
