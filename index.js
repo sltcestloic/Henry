@@ -3,12 +3,7 @@ const auth = require('./auth.json');
 
 runHenry();
 
-var ladder = [];
-
-for (var n = 0; n < 10; n++) {
-	var obj = {"count": 0, "word": ""}
-	ladder[n] = obj;
-}
+var ladder = [ { "count": 0, "word": "" } ];
 
 //xaQJbozY_Is en
 //pfaSUYaSgRo en auto
