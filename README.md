@@ -1,6 +1,6 @@
 # Henry
 
-A tool to analyze youtubers vocabulary
+A tool to analyze youtubers vocabulary, return an array of object with each word and the amount of times the person said it, in descending order
 
 
 # Setup
