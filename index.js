@@ -1,30 +1,40 @@
 const fetch = require('node-fetch');
-const auth = require('./auth.json');
+var auth;
 
+const uploads_amount = 20; // The amount of videos you want to analyze (starts from the last uploaded video)
+const display_count = 50; // The amount of words you want to show in the results
+
+try {
+	auth = require('./auth.json');
+} catch (error) {
+	console.log('Please enter your YouTube API key in auth.example.json, then rename it auth.json');
+	process.exit(1);
+}
 runHenry();
 
-var ladder = [ { "count": 0, "word": "" } ];
+var ladder = [ { count: 0, word: "" } ];
 
-//xaQJbozY_Is en
-//pfaSUYaSgRo en auto
-//WlVeRoSjBO8 fr auto
-//cano6r5rAAY no cap lol
 async function runHenry() {
 	var args = process.argv.slice(2);
 	if (args.length != 2)
-		console.log('Usage: node index.js <channel id/name> <target language>');
+		console.log('Usage: npm start <channel id/name> <target language>',
+					'\nExample: npm start MrBeast6000 en');
 	else {
 		var channelId;
 		if (args[0].length == 24) //TODO find better condition
 			channelId = args[0];
 		else
 			channelId = await fetchChannelId(args[0]);
-		console.log(channelId);
+
+		if (!channelId) return; // Channel not found
 
 		var targetLanguage = args[1];
 		var uploadsId = await fetchUploadsId(channelId);
 		var videosId = await fetchVideosId(uploadsId);
+		
+		console.log('Analyzing ' + videosId.length + ' videos');
 
+		var analyzedCount = 0;
 		for (var i = 0; i < videosId.length; i++) {
 
 			console.log(`Handling video ${videosId[i]}...`);
@@ -39,6 +49,7 @@ async function runHenry() {
 				for (var j = 0; j < captionTracks.length; j++)
 					if (captionTracks[j].languageCode == targetLanguage) {
 						console.log('Found target language !');
+						analyzedCount++;
 						baseUrl = captionTracks[j].baseUrl;
 						break;
 					}
@@ -52,7 +63,9 @@ async function runHenry() {
 			}
 		}
 		ladder.sort((a, b) => b.count - a.count);
-		console.log(ladder);
+		for (var i = 0; i < display_count && ladder[i]; i++)
+			console.log(ladder[i]);
+		console.log(`Successfuly analyzed the subtitles of ${analyzedCount} videos`);
 	}
 }
 
@@ -134,11 +147,11 @@ async function fetchChannelId(query) {
 	await fetch(url, { method: "Get" })
     		.then(res => res.json())
     		.then((json) => {
-			if (json.items == undefined)
+			if (json.items == undefined || json.items.length == 0) // Not sure if the first condition if even useful
 				console.log('Channel not found');
 			else {
 				channelId = json.items[0].id.channelId;
-				console.log(`Channel id : ${channelId}`);
+				console.log(`Found channel id: ${channelId}`);
 			}
 		});
 	return channelId;
@@ -162,7 +175,7 @@ async function fetchUploadsId(channelId) {
 }
 
 async function fetchVideosId(uploadsId) {
-	var url = `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=${uploadsId}&key=${auth.key}&part=snippet&maxResults=20`;
+	var url = `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=${uploadsId}&key=${auth.key}&part=snippet&maxResults=${uploads_amount}`;
 
 	var videosId = [];
 	
