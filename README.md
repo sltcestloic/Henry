@@ -8,6 +8,7 @@ It uses a list of stop words (every words listed in stop_words.json will not be 
 
 - install node.js if not already installed
 - run **git clone https://github.com/sltcestloic/Henry**
+- run **cd Henry && npm install**
 - update uploads_amount and display_count if you wish
 ![settings](https://i.ibb.co/MC2s8q3/Screenshot-2022-10-20-at-21-11-08.png)
 - edit the list of stop words if needed
