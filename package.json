@@ -18,7 +18,10 @@
   },
   "homepage": "https://github.com/wshloic/Henry#readme",
   "dependencies": {
+    "canvas": "^2.10.1",
     "googlethis": "^1.2.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "node-wordcloud": "^0.0.2",
+    "wordcloud": "^1.2.2"
   }
 }

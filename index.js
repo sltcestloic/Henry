@@ -1,4 +1,11 @@
 const fetch = require('node-fetch');
+const { createCanvas } = require('canvas');
+const WordCloud = require('node-wordcloud')(createCanvas);
+const stopWords = require('./stop_words.json')
+
+
+const fs = require('fs');
+
 var auth;
 
 const uploads_amount = 20; // The amount of videos you want to analyze (starts from the last uploaded video)
@@ -17,8 +24,8 @@ var ladder = [ { count: 0, word: "" } ];
 async function runHenry() {
 	var args = process.argv.slice(2);
 	if (args.length != 2)
-		console.log('Usage: npm start <channel id/name> <target language>',
-					'\nExample: npm start MrBeast6000 en');
+		console.log('Usage: npm start <channel id/name> <target language>\n',
+					'Example: npm start MrBeast6000 en');
 	else {
 		var channelId;
 		if (args[0].length == 24) //TODO find better condition
@@ -57,14 +64,26 @@ async function runHenry() {
 					console.log('No captions available in target language');
 				else {
 					var text = await fetchCaptionsText(baseUrl);
-					for (var k = 0; k < text.length; k++)
-						updateLadder(text[k]);
+					text.forEach(phrase => updateLadder(phrase));
 				}
 			}
 		}
+		if (ladder.length == 0) {
+			console.log('No subtitles found on any video :(');
+			return;
+		}
+
 		ladder.sort((a, b) => b.count - a.count);
-		for (var i = 0; i < display_count && ladder[i]; i++)
-			console.log(ladder[i]);
+		ladder.length = display_count;
+		const mapped_ladder = ladder.map(entry => [entry.word, entry.count]);
+		mapped_ladder.length = display_count;
+
+		const canvas = createCanvas(500, 500);
+		const wordCloud = WordCloud(canvas, { list: mapped_ladder });
+		wordCloud.draw()
+		const buffer = canvas.toBuffer()
+		fs.writeFileSync(`${args[0]}.png`, buffer)
+
 		console.log(`Successfuly analyzed the subtitles of ${analyzedCount} videos`);
 	}
 }
@@ -73,7 +92,7 @@ function updateLadder(phrase) {
 	var words = phrase.split(' ');
 	while (words.length > 0) {
 		var word = words[0];
-		if (word.length > 4) {
+		if (!stopWords.includes(word.toLowerCase())) {
 			var occurences = countOccurences(phrase, word);
 			if (ladder.filter(a => a.word == word).length > 0) {
 				var wordIndex = ladder.map(function(e) { return e.word; }).indexOf(word);
